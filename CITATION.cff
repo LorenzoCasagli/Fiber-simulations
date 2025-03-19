@@ -1,0 +1,18 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Fiber-simulations
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Lorenzo
+    family-names: Casagli
+    email: lcasagli@tudelft.nl
+    affiliation: TU Delft
+repository-code: >-
+  https://github.com/LorenzoCasagli/Fiber-simulations/blob/main/Citation.cff
+keywords:
+  - Fiber
