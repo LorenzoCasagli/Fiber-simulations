@@ -12,4 +12,4 @@ the codes will be integrated in a bigger project to simualte fiber-filter intera
 # Licenses
 
 # Badges
-
+![Example_static_badge](https://img.shields.io/badge/any_text-you_like-blue)
