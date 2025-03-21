@@ -47,7 +47,6 @@ const double c2 = 1;
 /*************************************************************************/
 
 
-//TESTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 void init(vector<double>* rx, vector<double>* ry, vector<double>* Xy, vector<double>* Xx, vector<double>* theta){
 	
 	for (int i=0; i < N; i++)
@@ -65,143 +64,145 @@ void init(vector<double>* rx, vector<double>* ry, vector<double>* Xy, vector<dou
 Eigen::SparseMatrix<double> system_coefficients(Eigen::SparseMatrix<double>& A,vector<double> theta)
 {
 	cout << "Total rows " << A.rows() << endl;
-	for (int i = 0; i < A.rows(); i++)
+	int indx = 0;
+	for (int i = 0; i < N; i++)
 	{
+		for (int j = 0; j < vars; j++)
+		{
+		indx = i * vars + j;
 		// Equation for momentum x
-		if (i % N == 0)	
+		if (j == 0)	
 		{
 			if (i == 0)
 			{
-				A.insert(i, i) = 1;
-				A.insert(i, i + vars + 1) = -dt/c1;
+				A.insert(indx, indx) = 1;
+				A.insert(indx, indx + vars + 1) = -dt/c1;
 			}
 			
 			
 			// The last cylinder has the boundary condition of X_i+1 = 0
 			// so it doesn't have the final term
-			else if (i == A.rows() - (vars - 2))
+			else if (i == N-1)
 			{
-				A.insert(i, i - 2) = 1;
-				A.insert(i, i + 1) = dt/c1;				
+				A.insert(indx, indx - 2) = 1;
+				A.insert(indx, indx + 1) = dt/c1;				
 			}
 			// All cylinders that are neither the first nor the last 
 			else
 			{
-				A.insert(i, i - 2) = 1;
-		        	A.insert(i, i + 1) = dt/c1;
-				A.insert(i, i + vars + 1) = -dt/c1;
+				A.insert(indx, indx - 2) = 1;
+		        	A.insert(indx, indx + 1) = dt/c1;
+				A.insert(indx, indx + vars + 1) = -dt/c1;
 			}
 
-		   cout << "- Matrix A row " << i << endl;
+		   cout << "- Matrix A row " << indx << endl;
 		}
 		// Equation for momentum y
-		else if (i % N == 1)
+		else if (j == 1)
                 {
-			 if (i == 1)
+			 if (i == 0)
 			 {
-                                A.insert(i, i) = 1;
-                                A.insert(i, i + vars + 1) = -dt/c1;
+                                A.insert(indx, indx) = 1;
+                                A.insert(indx, indx + vars + 1) = -dt/c1;
                          }
 
                         // The last cylinder has the boundary condition of X_i+1 = 0
                         // so it doesn't have the final term
-                        else if (i == A.rows() - (vars - 3))
+                        else if (i == N-1)
                         {
-                                A.insert(i, i - 2) = 1;
-                                A.insert(i, i + 1) = dt/c1;
+                                A.insert(indx, indx - 2) = 1;
+                                A.insert(indx, indx + 1) = dt/c1;
                         }
                         // All cylinders that are neither the first nor the last
                         else
                         {
-                        	A.insert(i, i - 2) = 1;
-                        	A.insert(i, i + 1) = dt/c1;
-                        	A.insert(i, i + vars + 1) = -dt/c1;
+                        	A.insert(indx, indx - 2) = 1;
+                        	A.insert(indx, indx + 1) = dt/c1;
+                        	A.insert(indx, indx + vars + 1) = -dt/c1;
                         }	
 
-			 cout << "-- Matrix A row " << i << endl;
+			 cout << "-- Matrix A row " << indx << endl;
                 }
 		// Equation for momentum theta (angular)
-		else if (i % N == 2)
+		else if (j == 2)
                 {
-			if (i == 2) 
+			if (i == 0) 
 			{
-				A.insert(i, i) = 1 - 2*K*dt/c2;
-                        	//A.insert(i, i + 1) = -l*dt/c2;  // ADD THE COSINE TERM???
-                        	//A.insert(i, i + 2) = -l*dt/c2;  // ADD THE SINE TERM?
-				//The previous terms are 0 since the boundary condition is 0 for the force
-				A.insert(i, i + vars) = -l*dt/c2;
-                                A.insert(i, i + vars - 1) = -l*dt/c2;
-				A.insert(i, i + vars - 2) = K*dt/c2;
+				A.insert(indx, indx) = 1 - 2*K*dt/c2;
+				A.insert(indx, indx + vars) = -l*dt/c2;
+                                A.insert(indx, indx + vars - 1) = -l*dt/c2;
+				A.insert(indx, indx + vars - 2) = K*dt/c2;
 			 	
-				cout << "--- Matrix A row " << i << endl;
+				cout << "--- Matrix A row " << indx << endl;
 			}
 			// Last cylinder
-			else if (i == A.rows() - 1)
+			else if (i == N - 1)
 			{
-				A.insert(i, i - 2) = 1 - 2*K*dt/c2;
-                                A.insert(i, i - 1) = -l*dt/c2;  // ADD THE COSINE TERM???
-                                A.insert(i, i) = -l*dt/c2;  // ADD THE SINE TERM?
-				A.insert(i, i - 2 - vars) = -K*dt/c2;
-				cout << "--- Matrix A row " << i << endl;
+				A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
+                                A.insert(indx, indx - 1) = -l*dt/c2;  // ADD THE COSINE TERM???
+                                A.insert(indx, indx) = -l*dt/c2;  // ADD THE SINE TERM?
+				A.insert(indx, indx - 2 - vars) = -K*dt/c2;
+				cout << "--- Matrix A row " << indx << endl;
 			}
 
 			else
 			{
 
-				A.insert(i, i - 2) = 1 - 2*K*dt/c2;
-                        	A.insert(i, i - 1) = -l*dt/c2;  // ADD THE COSINE TERM???
-                        	A.insert(i, i) = -l*dt/c2;	// ADD THE SINE TERM?
+				A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
+                        	A.insert(indx, indx - 1) = -l*dt/c2;  // ADD THE COSINE TERM???
+                        	A.insert(indx, indx) = -l*dt/c2;	// ADD THE SINE TERM?
 			
-				A.insert(i, i + vars - 2) = K*dt/c2;
-				A.insert(i, i + vars - 1)  = -l*dt/c2;
-                        	A.insert(i, i + vars)  = -l*dt/c2;		
+				A.insert(indx, indx + vars - 2) = K*dt/c2;
+				A.insert(indx, indx + vars - 1)  = -l*dt/c2;
+                        	A.insert(indx, indx + vars)  = -l*dt/c2;		
 
-			        if (i == 7){
-					A.insert(i, i - vars) = -K*dt/c2;
+			        if (i == 1){
+					A.insert(indx, indx - vars) = -K*dt/c2;
 				}
 				else {
-					A.insert(i, i - 2 - vars) = -K*dt/c2;
+					A.insert(indx, indx- 2 - vars) = -K*dt/c2;
 				}
-			 	cout << "--- Matrix A row " << i << endl;
+			 	cout << "--- Matrix A row " << indx << endl;
 			}
                 }
-		
-		if (i < vars){
-			// Connectivity equation x
-			if (i % N == 3)
-                	{ 
-				A.insert(i, i - 3) = 1;
-				A.insert(i, i + vars - 5) = -1;         // ADD THE coSINE TERM?
-		 		cout << "---- Matrix A row " << i << endl;
-                	}
-			// Connectivity equation y
-			else if (i % N == 4)
-                	{
-				A.insert(i, i - 3) = 1;		// ADD THE SINE TERM???
-                        	A.insert(i, i + vars - 5) = -1;
-				cout << "----- Matrix A row " << i << endl;
-                	}
-		}
+		if (i < N-1){		
+			if (i == 0){
+				// Connectivity equation x
+				if (j == 3)
+				{ 
+					A.insert(indx, indx - 3) = 1;
+					A.insert(indx, indx + vars - 5) = -1;         // ADD THE coSINE TERM?
+					cout << "---- Matrix A row " << indx << endl;
+				}
+				// Connectivity equation y
+				else if (j == 4)
+				{
+					A.insert(indx, indx - 3) = 1;		// ADD THE SINE TERM???
+					A.insert(indx, indx + vars - 5) = -1;
+					cout << "----- Matrix A row " << indx << endl;
+				}
+			}
 		else
-		{
-		
-			 if (i % N == 3)
-                        {
-                                A.insert(i, i - 3 - 2) = 1;
-                                A.insert(i, i + vars - 5) = -1;         // ADD THE coSINE TERM?
-                                cout << "---- Matrix A row " << i << endl;
-                        }
-                        // Connectivity equation y
-                        else if (i % N == 4)
-                        {
-                                A.insert(i,i - 3 - 2) = 1;          // ADD THE SINE TERM???
-                                A.insert(i,i + vars - 5) = -1;
-                                cout << "----- Matrix A row " << i << endl;
-                        }
-		
+			{
+			
+				 if (j == 3)
+				{
+					A.insert(indx, indx - 3 - 2) = 1;
+					A.insert(indx, indx + vars - 5) = -1;         // ADD THE coSINE TERM?
+					cout << "---- Matrix A row " << indx << endl;
+				}
+				// Connectivity equation y
+				else if (j == 4)
+				{
+					A.insert(indx, indx - 3 - 2) = 1;          // ADD THE SINE TERM???
+					A.insert(indx, indx + vars - 5) = -1;
+					cout << "----- Matrix A row " << indx << endl;
+				}
+			
+			}
 		}
-		
 	}
+}
 		return A;
 		
 }
