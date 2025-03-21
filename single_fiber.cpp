@@ -47,7 +47,7 @@ const double c2 = 1;
 /*************************************************************************/
 
 
-
+//TESTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 void init(vector<double>* rx, vector<double>* ry, vector<double>* Xy, vector<double>* Xx, vector<double>* theta){
 	
 	for (int i=0; i < N; i++)
