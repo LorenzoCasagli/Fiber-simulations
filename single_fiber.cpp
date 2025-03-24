@@ -58,8 +58,148 @@ void init(vector<double>* rx, vector<double>* ry, vector<double>* Xy, vector<dou
 }
 
 
+Eigen::SparseMatrix<double> system_coefficients_first_half(Eigen::SparseMatrix<double>& A,vector<double> theta)
+{
+	/// This function includes also the center
+	cout << "Total rows " << A.rows() << endl;
+        int indx = 0;
+	for (int i = 0; i < (int)floor(N/2) + 1; i++)
+        {
+                for (int j = 0; j < vars; j++)
+                {
+                indx = i * vars + j;
+                // Equation for momentum x
+                if (j == 0)
+                {
+                        if (i == 0)
+                        {
+                                A.insert(indx, indx) = 1;
+                                A.insert(indx, indx + vars + 1) = -dt/c1;
+                        }
 
-//Define two functions that writes a matrix and a vector for the linear system Ax = b
+
+                        // The middle cylinder has a set of constraints that keeps it still
+			// It has only the connectivity equations
+                        else if (i == (int)floor(N/2))
+                        {
+
+                                A.insert(indx, indx) = 1;
+			       // A.insert(indx, indx + 2) = 1; cos(theta)	
+
+
+                        }
+                        
+			else
+                        {
+                                A.insert(indx, indx - 2) = 1;
+                                A.insert(indx, indx + 1) = dt/c1;
+                                A.insert(indx, indx + vars + 1) = -dt/c1;
+                        }
+
+                   cout << "- Matrix A row " << indx << endl;
+                }
+                // Equation for momentum y
+                else if (j == 1)
+                {
+                         if (i == 0)
+                         {
+                                A.insert(indx, indx) = 1;
+                                A.insert(indx, indx + vars + 1) = -dt/c1;
+			 }
+
+			 else if (i == (int)floor(N/2))
+                        {
+
+                                A.insert(indx, indx) = 1;
+                               // A.insert(indx, indx + 1) = 1; sin(theta)
+
+                        }
+                        else
+                        {
+                                A.insert(indx, indx - 2) = 1;
+                                A.insert(indx, indx + 1) = dt/c1;
+                                A.insert(indx, indx + vars + 1) = -dt/c1;
+                        }
+
+                         cout << "-- Matrix A row " << indx << endl;
+                }
+                // Equation for momentum theta (angular)
+                else if (j == 2)
+                {
+                        if (i == 0)
+                        {
+                                A.insert(indx, indx) = 1 - 2*K*dt/c2;
+                                A.insert(indx, indx + vars) = -l*dt/c2;
+                                A.insert(indx, indx + vars - 1) = -l*dt/c2;
+                                A.insert(indx, indx + vars - 2) = K*dt/c2;
+
+                                cout << "--- Matrix A row " << indx << endl;
+                        }
+                
+			else
+                        {
+
+                                A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
+                                A.insert(indx, indx - 1) = -l*dt/c2;  // ADD THE COSINE TERM???
+                                A.insert(indx, indx) = -l*dt/c2;        // ADD THE SINE TERM?
+
+                                A.insert(indx, indx + vars - 2) = K*dt/c2;
+                                A.insert(indx, indx + vars - 1)  = -l*dt/c2;
+                                A.insert(indx, indx + vars)  = -l*dt/c2;
+
+                                if (i == 1){
+                                        A.insert(indx, indx - vars) = -K*dt/c2;
+                                }
+                                else {
+                                        A.insert(indx, indx- 2 - vars) = -K*dt/c2;
+                                }
+                                cout << "--- Matrix A row " << indx << endl;
+                        }
+                }
+                                // Connectivity equation x
+                 else if (j == 3)
+                        {
+				if (i == 0){
+                                        A.insert(indx, indx - 3) = 1;
+                                        A.insert(indx, indx + vars - 5) = -1;         // ADD THE coSINE TERM?
+                                        cout << "---- Matrix A row " << indx << endl;
+                                }
+
+				else
+				{
+					A.insert(indx, indx - 3 - 2) = 1;
+                                        A.insert(indx, indx + vars - 5) = -1;         // ADD THE coSINE TERM?
+                                        cout << "---- Matrix A row " << indx << endl;
+				
+				}
+			}                                // Connectivity equation y
+                  else if (j == 4)
+                        {
+				if (i == 0){
+                                        A.insert(indx, indx - 3) = 1;           // ADD THE SINE TERM???
+                                        A.insert(indx, indx + vars - 5) = -1;
+                                        cout << "----- Matrix A row " << indx << endl;
+                                }
+				else
+				{
+                        		A.insert(indx, indx - 3 - 2) = 1;          // ADD THE SINE TERM???
+                                        A.insert(indx, indx + vars - 5) = -1;
+                                        cout << "----- Matrix A row " << indx << endl;
+				
+				}
+			}	
+                        
+                	
+        	}
+	}
+                return A;
+
+}
+
+
+Eigen::SparseMatrix<double> system_coefficients_second_half(Eigen::SparseMatrix<double>& A,vector<double> theta)
+{
+
 
 Eigen::SparseMatrix<double> system_coefficients(Eigen::SparseMatrix<double>& A,vector<double> theta)
 {
@@ -87,7 +227,16 @@ Eigen::SparseMatrix<double> system_coefficients(Eigen::SparseMatrix<double>& A,v
 				A.insert(indx, indx - 2) = 1;
 				A.insert(indx, indx + 1) = dt/c1;				
 			}
-			// All cylinders that are neither the first nor the last 
+			
+
+			// The middle cylinder has a set of constraints that keeps it still
+			else if (i == (int)floor(N/2))
+			{
+				A.insert(indx, indx - 2)
+			
+			
+			}
+			// All cylinders that are neither the first nor the last
 			else
 			{
 				A.insert(indx, indx - 2) = 1;
@@ -294,9 +443,11 @@ int main(){
 	init(&rx, &ry, &Xy, &Xx, &theta);
 	A.setZero();
 	A = system_coefficients(A, theta);
-	writeMatrixToFile(A, "Linear_system_matrix.txt");
+	//writeMatrixToFile(A, "Linear_system_matrix.txt");
 	b = rhs(b, rx, ry, theta);
-	writeMatrixToFile(b, "rhs_linear_system.txt");
+	//writeMatrixToFile(b, "rhs_linear_system.txt");
+	
+	
 	/* Check for the correct inizialization*/
 	/*
 	for (int i=0; i < N; i++)
