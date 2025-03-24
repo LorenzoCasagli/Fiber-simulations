@@ -403,9 +403,9 @@ int main(){
 	init(&rx, &ry, &Xy, &Xx, &theta);
 	A.setZero();
 	A = system_coefficients(A, theta);
-	writeMatrixToFile(A, "Linear_system_matrix.txt");
+	writeMatrixToFile(A, "Linear_system_matrix_2.txt");
 	b = rhs(b, rx, ry, theta);
-	writeMatrixToFile(b, "rhs_linear_system.txt");
+	writeMatrixToFile(b, "rhs_linear_system_2.txt");
 	
 	
 	/* Check for the correct inizialization*/
