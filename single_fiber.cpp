@@ -39,8 +39,10 @@ const int vars = 5;
 const double u = 0;
 const double v = 1;  
 const double omega = 0;
-const double c1 = 1;
-const double c2 = 1;
+const double rho = 1;
+const double mu = 1;
+const double c1 = 3 * pi * mu * l;
+const double c2 = pi * mu * pow(l,3);
 
 /**********************************************************************/
 /* All the variables are with unit so in the future adimensionalize plz*/
@@ -128,8 +130,8 @@ int system_coefficients_first_half(Eigen::SparseMatrix<double>& A,vector<double>
                         if (i == 0)
                         {
                                 A.insert(indx, indx) = 1 - 2*K*dt/c2;
-                                A.insert(indx, indx + vars) = -l*dt/c2;
-                                A.insert(indx, indx + vars - 1) = -l*dt/c2;
+                                A.insert(indx, indx + vars) = -l*dti*cos(theta_p[i])/c2;
+                                A.insert(indx, indx + vars - 1) = -l*dt*sin(theta_p[i])/c2;
                                 A.insert(indx, indx + vars - 2) = K*dt/c2;
 
                                 cout << "--- Matrix A row " << indx << endl;
@@ -139,18 +141,18 @@ int system_coefficients_first_half(Eigen::SparseMatrix<double>& A,vector<double>
                         {
 
                                 A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
-                                A.insert(indx, indx - 1) = -l*dt/c2;  // ADD THE COSINE TERM???
-                                A.insert(indx, indx) = -l*dt/c2;        // ADD THE SINE TERM?
+                                A.insert(indx, indx - 1) = -l*dt*cos(theta_p[i])/c2;  // ADD THE COSINE TERM???
+                                A.insert(indx, indx) = -l*dt*sin(theta_p[i])/c2;        // ADD THE SINE TERM?
 
                                 A.insert(indx, indx + vars - 2) = K*dt/c2;
-                                A.insert(indx, indx + vars - 1)  = -l*dt/c2;
-                                A.insert(indx, indx + vars)  = -l*dt/c2;
+                                A.insert(indx, indx + vars - 1)  = -l*dt*cos(theta_p[i])/c2;
+                                A.insert(indx, indx + vars)  = -l*dt*sin(theta_p[i])/c2;
 
                                 if (i == 1){
                                         A.insert(indx, indx - vars) = -K*dt/c2;
                                 }
                                 else {
-                                        A.insert(indx, indx- 2 - vars) = -K*dt/c2;
+                                        A.insert(indx, indx - 2 - vars) = -K*dt/c2;
                                 }
                                 cout << "--- Matrix A row " << indx << endl;
                         }
@@ -160,14 +162,14 @@ int system_coefficients_first_half(Eigen::SparseMatrix<double>& A,vector<double>
                         {
 				if (i == 0){
                                         A.insert(indx, indx - 3) = 1;
-                                        A.insert(indx, indx + vars - 5) = -1;         // ADD THE coSINE TERM?
+                                        A.insert(indx, indx + vars - 5) = -1;         
                                         cout << "---- Matrix A row " << indx << endl;
                                 }
 
 				else
 				{
 					A.insert(indx, indx - 3 - 2) = 1;
-                                        A.insert(indx, indx + vars - 5) = -1;         // ADD THE coSINE TERM?
+                                        A.insert(indx, indx + vars - 5) = -1;         
                                         cout << "---- Matrix A row " << indx << endl;
 				
 				}
@@ -175,14 +177,14 @@ int system_coefficients_first_half(Eigen::SparseMatrix<double>& A,vector<double>
                   else if (j == 4)
                         {
 				if (i == 0){
-                                        A.insert(indx, indx - 3) = 1;           // ADD THE SINE TERM???
-                                        A.insert(indx, indx + vars - 5) = -1;
+                                        A.insert(indx, indx - 3) = 1;           
+ 					A.insert(indx, indx + vars - 5) = -1;
                                         cout << "----- Matrix A row " << indx << endl;
                                 }
 				else
 				{
-                        		A.insert(indx, indx - 3 - 2) = 1;          // ADD THE SINE TERM???
-                                        A.insert(indx, indx + vars - 5) = -1;
+                        		A.insert(indx, indx - 3 - 2) = 1;          
+					A.insert(indx, indx + vars - 5) = -1;
                                         cout << "----- Matrix A row " << indx << endl;
 				
 				}
@@ -195,7 +197,7 @@ int system_coefficients_first_half(Eigen::SparseMatrix<double>& A,vector<double>
 }
 
 
-int system_coefficients_second_half(Eigen::SparseMatrix<double>& A,vector<double> theta)
+int system_coefficients_second_half(Eigen::SparseMatrix<double>& A,vector<double> theta_p)
 {
         int indx = 0;
         for (int i = (int)floor(N/2) + 1; i < N; i++)
@@ -249,8 +251,8 @@ int system_coefficients_second_half(Eigen::SparseMatrix<double>& A,vector<double
                         if (i == N - 1)
                         {
                                 A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
-                                A.insert(indx, indx - 1) = -l*dt/c2;  // ADD THE COSINE TERM???
-                                A.insert(indx, indx) = -l*dt/c2;  // ADD THE SINE TERM?
+                                A.insert(indx, indx - 1) = -l*dt*cos(theta_p[i])/c2;  // ADD THE COSINE TERM???
+                                A.insert(indx, indx) = -l*dt*sin(theta_p[i])/c2;  // ADD THE SINE TERM?
                                 A.insert(indx, indx - 2 - vars) = -K*dt/c2;
                                 cout << "--- Matrix A row " << indx << endl;
 
@@ -261,12 +263,12 @@ int system_coefficients_second_half(Eigen::SparseMatrix<double>& A,vector<double
                         {
 
                                 A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
-                                A.insert(indx, indx - 1) = -l*dt/c2;  // ADD THE COSINE TERM???
-				A.insert(indx, indx) = -l*dt/c2;        // ADD THE SINE TERM?
+                                A.insert(indx, indx - 1) = -l*dt*cos(theta_p[i])/c2;  // ADD THE COSINE TERM???
+				A.insert(indx, indx) = -l*dt*sin(theta_p[i])/c2;        // ADD THE SINE TERM?
 
                                 A.insert(indx, indx + vars - 2) = K*dt/c2;
-                                A.insert(indx, indx + vars - 1)  = -l*dt/c2;
-                                A.insert(indx, indx + vars)  = -l*dt/c2;
+                                A.insert(indx, indx + vars - 1)  = -l*dt*cos(theta_p[i])/c2;
+                                A.insert(indx, indx + vars)  = -l*dt*sin(theta_p[i])/c2;
 
 				A.insert(indx, indx- 2 - vars) = -K*dt/c2;
                                 cout << "--- Matrix A row " << indx << endl;
@@ -316,7 +318,7 @@ Eigen::SparseMatrix<double> system_coefficients(Eigen::SparseMatrix<double>& A,v
 }
 
 
-Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, vector<double>& theta)
+Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, vector<double>& theta_p)
 {
 	int indx = 0;
 	for (int i = 0; i < N; i++)
@@ -329,12 +331,12 @@ Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, 
 				{
 					if (j == 0)
                                                 {
-                                                        b[indx] = -l/2 * (1 + cos(theta[i+1]));
+                                                        b[indx] = -l/2 * (1 + cos(theta_p[i+1]));
                                                 }
                                         else if (j == 1)
                                                 {
 
-                                                        b[indx] = b[indx] = -l/2 * (0 + sin(theta[i+1]);
+                                                        b[indx] = b[indx] = -l/2 * (0 + sin(theta_p[i+1]);
 							// Need to exit the inner loop when the midpoint is addressed
 							break;
 
@@ -354,7 +356,7 @@ Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, 
 					else if (j == 2)
 						{
 
-							b[indx] = dt * omega + theta[i];
+							b[indx] = dt * omega + theta_p[i];
 
 						}
 					
@@ -449,20 +451,23 @@ int main(){
 	vector<double> Xx(N, 0);
 	vector<double> Xy(N, 0);
 	vector<double> theta(N, 0);
+	vector<double> theta_p(N, 0);
 	/// Since there are 5 variables in 2D per cylinder the matrix is 5*N
 	/// 5 equations are revomed since the last cylinder doesn't have connectivity and the middle one 
 	/// doesn't have equilibrium eq
 	Eigen::SparseMatrix<double> A(vars*N - 2 - 3,vars*N -2 - 3);
 	Eigen::VectorXd b(vars*N - 2 - 3);
 	
+	/****** Re calculation *****/
+	double Re = d*rho*v/mu 
 
 
 	init(&rx, &ry, &Xy, &Xx, &theta);
 	A.setZero();
-	A = system_coefficients(A, theta);
-	writeMatrixToFile(A, "Linear_system_matrix_2.txt");
-	b = rhs(b, rx, ry, theta);
-	writeMatrixToFile(b, "rhs_linear_system_2.txt");
+	A = system_coefficients(A, theta_p);
+	//writeMatrixToFile(A, "Linear_system_matrix_2.txt");
+	b = rhs(b, rx, ry, theta_p);
+	//writeMatrixToFile(b, "rhs_linear_system_2.txt");
 	
 	
 	/* Check for the correct inizialization*/
@@ -479,11 +484,11 @@ int main(){
 
 
 	/********** Start of the time cycle **********/
-/*
+
 	for (double t = 0; t < T; t += dt)
 	{
 				
-	
+			
 	
 	
 	
@@ -495,7 +500,7 @@ int main(){
 	}
 
 	
-*/
+
 
 	return 0;
 }
