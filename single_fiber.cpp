@@ -268,6 +268,7 @@ int system_coefficients_second_half(Eigen::SparseMatrix<double>& A,vector<double
                                 A.insert(indx, indx + vars - 1)  = -l*dt/c2;
                                 A.insert(indx, indx + vars)  = -l*dt/c2;
 
+				A.insert(indx, indx- 2 - vars) = -K*dt/c2;
                                 cout << "--- Matrix A row " << indx << endl;
                         }
 
@@ -320,41 +321,97 @@ Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, 
 	int indx = 0;
 	for (int i = 0; i < N; i++)
 	{
-		for (int j = 0; j < vars; j++)
-		{
-			indx = i * vars + j;
-			if (j == 0)
-                        	{
-					b[indx] = dt * u + rx[i];
-				}
-			else if (j == 1)
+		if (i <= floor(N/2)){
+			for (int j = 0; j < vars; j++)
+			{
+				indx = i * vars + j;
+				if (i == floor(N/2))
 				{
-			
-					b[indx] = dt * v + ry[i];
-			
+					if (j == 0)
+                                                {
+                                                        b[indx] = -l/2 * (1 + cos(theta[i+1]));
+                                                }
+                                        else if (j == 1)
+                                                {
+
+                                                        b[indx] = b[indx] = -l/2 * (0 + sin(theta[i+1]));
+							// Need to exit the inner loop when the midpoint is addressed
+							break;
+
+                                                }
 				}
-			else if (j == 2)
-                        	{
+				else{
+					if (j == 0)
+						{
+							b[indx] = dt * u + rx[i];
+						}
+					else if (j == 1)
+						{
+					
+							b[indx] = dt * v + ry[i];
+					
+						}
+					else if (j == 2)
+						{
 
-				 	b[indx] = dt * omega + theta[i] + i;
+							b[indx] = dt * omega + theta[i];
 
-                        	}
-			if (indx < N*vars - 2){
-				if (j == 3)
-                        		{
+						}
+					
+					else if (j == 3)
+							{
 
-						b[indx] = -l/2 * (cos(theta[i]) + cos(theta[i+1])) + i;
+								b[indx] = -l/2 * (cos(theta[i]) + cos(theta[i+1]));
 
-                        		}
-				else if (j == 4)
-                        		{
+							}
+					else if (j == 4)
+							{
 
-						b[indx] = -l/2 * (sin(theta[i]) + sin(theta[i+1])) + i;
+								b[indx] = -l/2 * (sin(theta[i]) + sin(theta[i+1]));
 
-                        		}	 
+							}	 
+				}
 			}
+
 		}
 
+		else{
+			for (int j = 0; j < vars; j++)
+                        {
+                                indx = i * vars + j - 3;
+                                if (j == 0)
+                                        {
+                                                b[indx] = dt * u + rx[i];
+                                        }
+                                else if (j == 1)
+                                        {
+
+                                                b[indx] = dt * v + ry[i];
+
+                                        }
+                                else if (j == 2)
+                                        {
+
+                                                b[indx] = dt * omega + theta[i];
+
+                                        }
+                                if (indx < N*vars - 5){
+                                        if (j == 3)
+                                                {
+
+                                                        b[indx] = -l/2 * (cos(theta[i]) + cos(theta[i+1]));
+
+                                                }
+                                        else if (j == 4)
+                                                {
+
+                                                        b[indx] = -l/2 * (sin(theta[i]) + sin(theta[i+1]));
+
+                                                }
+                                }
+                        }		
+		
+		}
 	}
 	return b;
 
@@ -396,7 +453,7 @@ int main(){
 	/// 5 equations are revomed since the last cylinder doesn't have connectivity and the middle one 
 	/// doesn't have equilibrium eq
 	Eigen::SparseMatrix<double> A(vars*N - 2 - 3,vars*N -2 - 3);
-	Eigen::VectorXd b(vars*N - 2);
+	Eigen::VectorXd b(vars*N - 2 - 3);
 	
 
 
