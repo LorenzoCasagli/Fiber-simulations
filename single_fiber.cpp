@@ -334,7 +334,7 @@ Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, 
                                         else if (j == 1)
                                                 {
 
-                                                        b[indx] = b[indx] = -l/2 * (0 + sin(theta[i+1]));
+                                                        b[indx] = b[indx] = -l/2 * (0 + sin(theta[i+1]);
 							// Need to exit the inner loop when the midpoint is addressed
 							break;
 
