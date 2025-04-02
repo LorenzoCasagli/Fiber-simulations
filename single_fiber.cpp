@@ -51,12 +51,22 @@ const double c2 = pi * mu * pow(l,3);
 /*************************************************************************/
 
 
-void init(vector<double>* rx, vector<double>* ry, vector<double>* Xy, vector<double>* Xx, vector<double>* theta){
+void init(vector<double>* rx, vector<double>* ry, vector<double>* Xy, vector<double>* Xx, vector<double>* theta_p)
+{
 	
-	for (int i=0; i < N; i++)
+	for (int i = 0; i < N; i++)
 	{
 		(*rx)[i] = l * (i - floor(N/2)); 
 	
+		if (i < floor(theta_p -> size() /2))
+		{
+			(*theta_p)[i] = - 0.01;
+		}
+		else if (i > floor(theta_p -> size() /2))
+		{
+			(*theta_p)[i] = 0.01;
+		}
+
 	}
 
 }
@@ -185,7 +195,7 @@ int system_coefficients_first_half(Eigen::SparseMatrix<double>& A,vector<double>
                         {
                                 A.insert(indx, indx) = 1 - 2*K*dt/c2;
                                 A.insert(indx, indx + n_vars) = -l*dt*cos(theta_p[i])/c2;
-                                A.insert(indx, indx + n_vars - 1) = -l*dt*sin(theta_p[i])/c2;
+                                A.insert(indx, indx + n_vars - 1) = l*dt*sin(theta_p[i])/c2;
                                 A.insert(indx, indx + n_vars - 2) = K*dt/c2;
 
                         //        cout << "--- Matrix A row " << indx << endl;
@@ -195,28 +205,28 @@ int system_coefficients_first_half(Eigen::SparseMatrix<double>& A,vector<double>
                         {
 
                                 A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
-                                A.insert(indx, indx - 1) = -l*dt*cos(theta_p[i])/c2;  // ADD THE COSINE TERM???
-                                A.insert(indx, indx) = -l*dt*sin(theta_p[i])/c2;        // ADD THE SINE TERM?
+                                A.insert(indx, indx) = -l*dt*cos(theta_p[i])/c2;  
+                                A.insert(indx, indx - 1) = l*dt*sin(theta_p[i])/c2;        
 
 				if (i == (int)floor(N/2) -1)
                                 {
 
-					A.insert(indx, indx + 1)  = -l*dt*cos(theta_p[i])/c2;
-                                        A.insert(indx, indx + 2)  = -l*dt*sin(theta_p[i])/c2;
+					A.insert(indx, indx + 2)  = -l*dt*cos(theta_p[i])/c2;
+                                        A.insert(indx, indx + 1)  = l*dt*sin(theta_p[i])/c2;
 
                                 }
                                 else
                                 {
 					A.insert(indx, indx + n_vars - 2) = K*dt/c2;
-                                	A.insert(indx, indx + n_vars - 1)  = -l*dt*cos(theta_p[i])/c2;
-                                	A.insert(indx, indx + n_vars)  = -l*dt*sin(theta_p[i])/c2;
+                                	A.insert(indx, indx + n_vars)  = -l*dt*cos(theta_p[i])/c2;
+                                	A.insert(indx, indx + n_vars - 1)  = l*dt*sin(theta_p[i])/c2;
                                 }
 
                                 if (i == 1){
-                                        A.insert(indx, indx - n_vars) = -K*dt/c2;
+                                        A.insert(indx, indx - n_vars) = K*dt/c2;
                                 }
                                 else {
-                                        A.insert(indx, indx - 2 - n_vars) = -K*dt/c2;
+                                        A.insert(indx, indx - 2 - n_vars) = K*dt/c2;
                                 }
                       //          cout << "--- Matrix A row " << indx << endl;
                         }
@@ -330,9 +340,9 @@ int system_coefficients_second_half(Eigen::SparseMatrix<double>& A,vector<double
                         if (i == N - 1)
                         {
                                 A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
-                                A.insert(indx, indx - 1) = -l*dt*cos(theta_p[i])/c2;  // ADD THE COSINE TERM???
-                                A.insert(indx, indx) = -l*dt*sin(theta_p[i])/c2;  // ADD THE SINE TERM?
-                                A.insert(indx, indx - 2 - n_vars) = -K*dt/c2;
+                                A.insert(indx, indx) = -l*dt*cos(theta_p[i])/c2;  
+                                A.insert(indx, indx - 1) = l*dt*sin(theta_p[i])/c2;  
+                                A.insert(indx, indx - 2 - n_vars) = K*dt/c2;
               //                  cout << "--- Matrix A row " << indx << endl;
 
 				return 0;
@@ -342,15 +352,18 @@ int system_coefficients_second_half(Eigen::SparseMatrix<double>& A,vector<double
                         {
 
                                 A.insert(indx, indx - 2) = 1 - 2*K*dt/c2;
-                                A.insert(indx, indx - 1) = -l*dt*cos(theta_p[i])/c2;  // ADD THE COSINE TERM???
-				A.insert(indx, indx) = -l*dt*sin(theta_p[i])/c2;        // ADD THE SINE TERM?
+                                A.insert(indx, indx) = -l*dt*cos(theta_p[i])/c2;  
+				A.insert(indx, indx - 1) = -l*dt*sin(theta_p[i])/c2;        
 
                                 A.insert(indx, indx + n_vars - 2) = K*dt/c2;
-                                A.insert(indx, indx + n_vars - 1)  = -l*dt*cos(theta_p[i])/c2;
-                                A.insert(indx, indx + n_vars)  = -l*dt*sin(theta_p[i])/c2;
-
-				A.insert(indx, indx- 2 - n_vars) = -K*dt/c2;
-            //                    cout << "--- Matrix A row " << indx << endl;
+                                A.insert(indx, indx + n_vars)  = -l*dt*cos(theta_p[i])/c2;
+                                A.insert(indx, indx + n_vars - 1)  = l*dt*sin(theta_p[i])/c2;
+				
+				if (i != int(floor(N/2)) + 1)
+				{
+				A.insert(indx, indx- 2 - n_vars) =K*dt/c2;
+          	                 }
+	    //                  cout << "--- Matrix A row " << indx << endl;
                         }
 
 		}
@@ -410,12 +423,12 @@ Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, 
 				{
 					if (j == 0)
                                                 {
-                                                        b[indx] = -l/2 * (1 + cos(theta_p[i+1]));
+                                                        b[indx] = l/2 * (1 + cos(theta_p[i+1]));
                                                 }
                                         else if (j == 1)
                                                 {
 
-                                                        b[indx] = b[indx] = -l/2 * (0 + sin(theta_p[i+1]));
+                                                        b[indx] = b[indx] = l/2 * (0 + sin(theta_p[i+1]));
 							// Need to exit the inner loop when the midpoint is addressed
 							break;
 
@@ -426,13 +439,29 @@ Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, 
 				{
 					if (j == 0)
                                                 {
-                                                        b[indx] = -l/2 * (1 + cos(theta_p[i]));
+                                                        b[indx] = dt * u + rx[i];
                                                 }
                                         else if (j == 1)
                                                 {
 
-                                                        b[indx] = b[indx] = -l/2 * (0 + sin(theta_p[i]));
-                                                        // Need to exit the inner loop when the midpoint is addressed
+                                                        b[indx] = dt * v + ry[i];
+
+                                                }
+                                        else if (j == 2)
+                                                {
+
+                                                        b[indx] = dt * omega + theta_p[i];
+
+                                                }
+
+					if (j == 3)
+                                                {
+                                                        b[indx] = -l/2 * (1 + cos(theta_p[i])); 
+                                                }
+                                        else if (j == 4)
+                                                {
+
+                                                        b[indx] = -l/2 * (0 + sin(theta_p[i]));
 
                                                 }
 				
@@ -497,19 +526,22 @@ Eigen::VectorXd rhs(Eigen::VectorXd& b, vector<double>& rx, vector<double>& ry, 
 
                                         }
                                 if (indx < N*n_vars - 5){
-                                        if (j == 3)
-                                                {
+			
+	
+						if (j == 3)
+							{
 
-                                                        b[indx] = -l/2 * (cos(theta_p[i]) + cos(theta_p[i+1]));
+								b[indx] = -l/2 * (cos(theta_p[i]) + cos(theta_p[i+1]));
 
-                                                }
-                                        else if (j == 4)
-                                                {
+							}
+						else if (j == 4)
+							{
 
-                                                        b[indx] = -l/2 * (sin(theta_p[i]) + sin(theta_p[i+1]));
+								b[indx] = -l/2 * (sin(theta_p[i]) + sin(theta_p[i+1]));
 
-                                                }
-                                }
+							}
+
+				}
                         }		
 		
 		}
@@ -568,7 +600,39 @@ void writeEigenVectorToFile(const Eigen::VectorXd& vec, const std::string& baseF
     outFile.close();
 }
 
-
+void get_variables(Eigen::VectorXd& vars_vect, vector<double>& rx, vector<double>& ry, vector<double>& Xy, vector<double>& Xx, vector<double>& theta)
+{
+	for (int i = 0; i < N; i++)
+	{
+		if (i == 0)
+		{
+			rx[i] = vars_vect[i];
+			ry[i] = vars_vect[i + 1];
+			theta[i] = vars_vect[i + 2];
+		}
+                 
+		else if (i < floor(N/2)) 
+		{
+			rx[i] = vars_vect[i * n_vars - 2];
+                        ry[i] = vars_vect[i *n_vars - 1];
+                        theta[i] = vars_vect[i * n_vars];
+			Xx[i] = vars_vect[i * n_vars + 1];
+			Xy[i] = vars_vect[i * n_vars + 2];
+		
+		}
+		else if (i > floor(N/2))
+		{
+			rx[i] = vars_vect[(i-1) * n_vars];
+			ry[i] = vars_vect[(i-1) * n_vars + 1];
+			theta[i] = vars_vect[(i-1) * n_vars + 2];
+			Xx[i] = vars_vect[(i-1) * n_vars + 3];
+			Xy[i] = vars_vect[(i-1) * n_vars + 4];
+		}
+		
+		
+		
+	}
+}
 
 
 int main(){
@@ -588,7 +652,9 @@ int main(){
 	double Re = d*rho*v/mu; 
 
 
-	init(&rx, &ry, &Xy, &Xx, &theta);
+	init(&rx, &ry, &Xy, &Xx, &theta_p);
+
+
 	A.setZero();
 	A = system_coefficients(A, theta_p);
 	writeMatrixToFile(A, "Linear_system_matrix_2.txt");
@@ -597,18 +663,24 @@ int main(){
 	
 	
 	/* Check for the correct inizialization*/
-	/*
+/*	
 	for (int i=0; i < N; i++)
         {
                 cout << rx[i] << endl;
+		cout << ry[i] << endl;
+		cout << theta_p[i] << endl;
 
         }
-	*/
+	exit(0);	
+*/	
+	
+
 
 	/********** Start of the time cycle **********/
 
 	for (double t = 0; t < T; t += dt)
 	{
+
 		Eigen::FullPivLU<Eigen::MatrixXd> lu(A);
 		lu.compute(A);
 
@@ -618,7 +690,8 @@ int main(){
                 //  }
 
 		Eigen::VectorXd vars_vect = lu.solve(b);
-		cout << vars_vect << endl;
+		//cout << vars_vect << endl;
+		get_variables(vars_vect, rx, ry, Xy, Xx, theta);
 	//	writeEigenVectorToFile(vars_vect, "Linear_system_solution_at_time", t);		
 			
 	
@@ -630,8 +703,14 @@ int main(){
 	break;	
 	}
 
-	
-
+	for (int i=0; i < N; i++)
+        {
+                cout << rx[i] << endl;
+                cout << ry[i] << endl;
+                cout << theta[i] << endl;
+		cout << Xx[i] << endl;
+		cout << Xy[i] << endl;
+        }
 
 	return 0;
 }
